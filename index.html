@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080d18">
+  <meta name="description" content="AI Deception — University Presentation 2026">
+  <title>AI Deception | University Presentation</title>
+  <style>
+    :root { color-scheme: dark; --bg:#080d18; --panel:#111a2b; --line:#27344a; --accent:#ff343d; --cyan:#18c9e8; --muted:#9ba9bc; }
+    * { box-sizing:border-box; }
+    html,body { margin:0; width:100%; height:100%; overflow:hidden; background:var(--bg); font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif; }
+    body { color:#f7f9fc; }
+    .stage { position:fixed; inset:0; display:grid; place-items:center; padding:28px 24px 72px; background:radial-gradient(ellipse at 50% 40%,#14223a 0%,#080d18 68%); }
+    .slide-wrap { width:min(100%, calc((100vh - 112px) * 16 / 9)); aspect-ratio:16/9; position:relative; display:grid; place-items:center; }
+    .slide { display:none; width:100%; height:100%; object-fit:contain; user-select:none; -webkit-user-drag:none; box-shadow:0 24px 80px #0009; }
+    .slide.active { display:block; animation:enter .24s ease-out; }
+    @keyframes enter { from { opacity:.45; transform:translateY(5px) scale(.997); } to { opacity:1; transform:none; } }
+    .topline { position:fixed; top:0; left:0; height:3px; width:100%; background:#1b2638; z-index:5; }
+    .progress { height:100%; width:5.26%; background:linear-gradient(90deg,var(--accent),#ff756e); transition:width .25s ease; }
+    .toolbar { position:fixed; left:0; right:0; bottom:0; min-height:60px; padding:9px 18px max(9px,env(safe-area-inset-bottom)); display:flex; align-items:center; justify-content:center; gap:10px; background:linear-gradient(180deg,#080d1800,#080d18ee 35%); z-index:6; }
+    button { border:1px solid var(--line); color:#eef3fb; background:#111a2beF; border-radius:10px; padding:9px 13px; font:600 13px/1 system-ui,sans-serif; cursor:pointer; transition:.15s ease; }
+    button:hover { border-color:#60718d; background:#1a2940; transform:translateY(-1px); }
+    button:focus-visible { outline:2px solid var(--cyan); outline-offset:3px; }
+    button:disabled { opacity:.35; cursor:not-allowed; transform:none; }
+    .counter { min-width:76px; text-align:center; color:#dbe4f1; font-size:12px; letter-spacing:.12em; font-variant-numeric:tabular-nums; }
+    .hint { position:fixed; right:18px; top:14px; color:#8392a8; font-size:11px; letter-spacing:.08em; z-index:4; }
+    .key { display:inline-block; border:1px solid #34435a; border-radius:4px; padding:2px 5px; color:#cbd6e5; margin:0 2px; }
+    .brand { position:fixed; left:18px; top:14px; color:#65758e; font-size:10px; letter-spacing:.2em; z-index:4; }
+    .overview { position:fixed; inset:0; z-index:10; background:#070b13f5; display:none; overflow:auto; padding:64px 24px 30px; }
+    .overview.open { display:block; }
+    .thumbs { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:16px; max-width:1400px; margin:auto; }
+    .thumb { padding:0; background:#111a2b; overflow:hidden; border-radius:9px; text-align:left; }
+    .thumb img { display:block; width:100%; aspect-ratio:16/9; object-fit:cover; }
+    .thumb span { display:block; padding:9px 11px; color:#c9d4e4; font-size:12px; }
+    .overview-head { max-width:1400px; margin:0 auto 22px; display:flex; align-items:center; justify-content:space-between; }
+    .overview-head h2 { margin:0; font-size:18px; font-weight:650; }
+    @media(max-width:650px) {
+      .stage { padding:18px 8px 74px; }
+      .slide-wrap { width:100%; }
+      .toolbar { gap:6px; padding-left:7px; padding-right:7px; }
+      button { padding:9px 10px; font-size:12px; }
+      .hint { display:none; } .brand { font-size:9px; }
+    }
+    @media (max-aspect-ratio: 4/5) {
+      .stage { padding-left:0; padding-right:0; }
+      .slide-wrap { width:100vw; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topline"><div class="progress" id="progress"></div></div>
+  <div class="brand">AI DECEPTION · UNIVERSITY PRESENTATION · 2026</div>
+  <div class="hint"><span class="key">←</span><span class="key">→</span> navigate · <span class="key">F</span> fullscreen · <span class="key">O</span> overview</div>
+  <main class="stage" aria-label="Presentation">
+    <div class="slide-wrap" id="slideWrap"></div>
+  </main>
+  <nav class="toolbar" aria-label="Slide controls">
+    <button id="first" title="First slide">|◀</button>
+    <button id="prev" title="Previous slide">← Previous</button>
+    <span class="counter" id="counter">01 / 19</span>
+    <button id="next" title="Next slide">Next →</button>
+    <button id="last" title="Last slide">▶|</button>
+    <button id="overviewBtn" title="Slide overview">Grid</button>
+    <button id="full" title="Fullscreen">⛶</button>
+  </nav>
+  <section class="overview" id="overview" aria-label="Slide overview">
+    <div class="overview-head"><h2>Choose a slide</h2><button id="closeOverview">Close ✕</button></div>
+    <div class="thumbs" id="thumbs"></div>
+  </section>
+  <script>
+    const files = ["slide-01.png", "slide-02.png", "slide-03.png", "slide-04.png", "slide-05.png", "slide-06.png", "slide-07.png", "slide-08.png", "slide-09.png", "slide-10.png", "slide-11.png", "slide-12.png", "slide-13.png", "slide-14.png", "slide-15.png", "slide-16.png", "slide-17.png", "slide-18.png", "slide-19.png"];
+    const wrap = document.getElementById('slideWrap');
+    const thumbs = document.getElementById('thumbs');
+    const overview = document.getElementById('overview');
+    const counter = document.getElementById('counter');
+    const progress = document.getElementById('progress');
+    let current = Math.max(0, Math.min(files.length-1, Number(location.hash.replace('#/','')) || 0));
+    const images = [];
+    files.forEach((file, i) => {
+      const img = document.createElement('img');
+      img.className = 'slide';
+      img.src = 'slides/' + file;
+      img.alt = `Slide ${i+1} of ${files.length}`;
+      img.draggable = false;
+      wrap.appendChild(img); images.push(img);
+      const btn = document.createElement('button');
+      btn.className = 'thumb';
+      btn.innerHTML = `<img src="slides/${file}" alt=""><span>Slide ${String(i+1).padStart(2,'0')}</span>`;
+      btn.addEventListener('click', () => { go(i); closeOverview(); });
+      thumbs.appendChild(btn);
+    });
+    function go(n) {
+      current = Math.max(0, Math.min(files.length-1, n));
+      images.forEach((img,i) => img.classList.toggle('active', i === current));
+      counter.textContent = `${String(current+1).padStart(2,'0')} / ${files.length}`;
+      progress.style.width = `${((current+1)/files.length)*100}%`;
+      document.getElementById('prev').disabled = current === 0;
+      document.getElementById('first').disabled = current === 0;
+      document.getElementById('next').disabled = current === files.length-1;
+      document.getElementById('last').disabled = current === files.length-1;
+      if (location.hash !== `#/${current}`) history.replaceState(null,'',`#/${current}`);
+    }
+    function openOverview(){ overview.classList.add('open'); }
+    function closeOverview(){ overview.classList.remove('open'); }
+    document.getElementById('prev').onclick = () => go(current-1);
+    document.getElementById('next').onclick = () => go(current+1);
+    document.getElementById('first').onclick = () => go(0);
+    document.getElementById('last').onclick = () => go(files.length-1);
+    document.getElementById('overviewBtn').onclick = openOverview;
+    document.getElementById('closeOverview').onclick = closeOverview;
+    document.getElementById('full').onclick = () => {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    };
+    document.addEventListener('keydown', e => {
+      if (['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)) { e.preventDefault(); closeOverview(); go(current+1); }
+      else if (['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)) { e.preventDefault(); closeOverview(); go(current-1); }
+      else if (e.key === 'Home') go(0);
+      else if (e.key === 'End') go(files.length-1);
+      else if (e.key.toLowerCase() === 'f') document.getElementById('full').click();
+      else if (e.key.toLowerCase() === 'o') overview.classList.toggle('open');
+      else if (e.key === 'Escape') closeOverview();
+    });
+    let touchX = null;
+    wrap.addEventListener('touchstart', e => { touchX = e.changedTouches[0].clientX; }, {passive:true});
+    wrap.addEventListener('touchend', e => {
+      if (touchX === null) return;
+      const dx = e.changedTouches[0].clientX-touchX;
+      if (Math.abs(dx)>55) go(current+(dx<0?1:-1));
+      touchX = null;
+    }, {passive:true});
+    go(current);
+  </script>
+</body>
+</html>
